@@ -17,5 +17,7 @@ namespace LMS.API.Models.Domain
 
         // Add this property to fix the error
         public ICollection<BookBorrowing> BookBorrowings { get; set; }
+        public ICollection<Notification> Notifications { get; set; }
+        public ICollection<Member> Members { get; set; }
     }
 }

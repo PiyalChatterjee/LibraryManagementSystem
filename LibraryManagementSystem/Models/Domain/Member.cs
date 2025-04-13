@@ -6,7 +6,7 @@ namespace LMS.API.Models.Domain
     {
         public Guid MemberId { get; set; }
         public Guid UserId { get; set; }
-        public DateTime MmebershipDate { get; set; }
+        public DateTime MembershipStartDate { get; set; }
         public DateTime MembershipExpiryDate { get; set; }
         public string Address { get; set; }
         public string Phone { get; set; }

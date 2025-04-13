@@ -4,6 +4,7 @@ using LMS.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LMS.API.Migrations
 {
     [DbContext(typeof(LMSDbContext))]
-    partial class LMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250413210833_Seeding data into users")]
+    partial class Seedingdataintousers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -275,7 +278,7 @@ namespace LMS.API.Migrations
                     b.Property<DateTime>("MembershipExpiryDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("MembershipStartDate")
+                    b.Property<DateTime>("MmebershipDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Phone")
@@ -485,7 +488,7 @@ namespace LMS.API.Migrations
             modelBuilder.Entity("LMS.API.Models.Domain.Member", b =>
                 {
                     b.HasOne("LMS.API.Models.Domain.User", "User")
-                        .WithMany("Members")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -496,7 +499,7 @@ namespace LMS.API.Migrations
             modelBuilder.Entity("LMS.API.Models.Domain.Notification", b =>
                 {
                     b.HasOne("LMS.API.Models.Domain.User", "User")
-                        .WithMany("Notifications")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -507,10 +510,6 @@ namespace LMS.API.Migrations
             modelBuilder.Entity("LMS.API.Models.Domain.User", b =>
                 {
                     b.Navigation("BookBorrowings");
-
-                    b.Navigation("Members");
-
-                    b.Navigation("Notifications");
                 });
 #pragma warning restore 612, 618
         }

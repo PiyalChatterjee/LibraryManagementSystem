@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LMS.API.Repositories;
+using AutoMapper;
 
 namespace LMS.API.Controllers
 {
@@ -15,11 +16,13 @@ namespace LMS.API.Controllers
     {
         private readonly LMSDbContext dbContext;
         private readonly IUserRepository userRepository;
+        private readonly IMapper mapper;
 
-        public UsersController(LMSDbContext dbContext, IUserRepository userRepository)
+        public UsersController(LMSDbContext dbContext, IUserRepository userRepository, IMapper mapper)
         {
             this.dbContext = dbContext;
             this.userRepository = userRepository;
+            this.mapper = mapper;
         }
         //Get all users
         // GET: api/users
@@ -30,25 +33,8 @@ namespace LMS.API.Controllers
             var userEntities = await userRepository.GetAllAsync();
 
             // Data mapping section
-            var userDTOList = new List<UserDTO>();
-            foreach (var user in userEntities)
-            {
-                var userDTO = new UserDTO
-                {
-                    UserId = user.UserId,
-                    Username = user.Username,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Role = user.Role.ToString(),
-                    Status = user.Status.ToString(),
-                    DateCreated = user.DateCreated,
-                    LastLogin = user.LastLogin
-                };
-                userDTOList.Add(userDTO);
-            }
             // Return the list of users with a 200 OK response
-            return Ok(userDTOList);
+            return Ok(mapper.Map<List<UserDTO>>(userEntities));
         }
 
         //Get user by id
@@ -62,20 +48,8 @@ namespace LMS.API.Controllers
                 return NotFound();
             }
             // Data mapping section
-            var userDTO = new UserDTO
-            {
-                UserId = userEntity.UserId,
-                Username = userEntity.Username,
-                Email = userEntity.Email,
-                FirstName = userEntity.FirstName,
-                LastName = userEntity.LastName,
-                Role = userEntity.Role.ToString(),
-                Status = userEntity.Status.ToString(),
-                DateCreated = userEntity.DateCreated,
-                LastLogin = userEntity.LastLogin
-            };
             // Return the user with a 200 OK response
-            return Ok(userDTO);
+            return Ok(mapper.Map<UserDTO>(userEntity));
         }
 
 
@@ -84,22 +58,16 @@ namespace LMS.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] AddUserRequestDTO addUserRequest)
         {
-            var userEntity = new User
+            // Check if the model state is valid
+            if (!ModelState.IsValid)
             {
-                UserId = Guid.NewGuid(),
-                Username = addUserRequest.Username,
-                Password = addUserRequest.Password, // In a real application, you should hash the password
-                Email = addUserRequest.Email,
-                FirstName = addUserRequest.FirstName,
-                LastName = addUserRequest.LastName,
-                Role = Enum.Parse<UserRoles>(addUserRequest.Role),
-                Status = Enum.Parse<UserStatus>(addUserRequest.Status),
-                DateCreated = DateTime.UtcNow,
-                LastLogin = null
-            };
+                return BadRequest(ModelState);
+            }
+
+            var userEntity = mapper.Map<User>(addUserRequest);
+            userEntity.DateCreated = DateTime.UtcNow; // Assign DateCreated as DateTime.Now
 
             userEntity = await userRepository.CreateUserAsync(userEntity);
-
 
             // If the user is not created, return a 400 Bad Request response
             if (userEntity == null)
@@ -107,18 +75,8 @@ namespace LMS.API.Controllers
                 return BadRequest("User could not be created.");
             }
             // Data mapping section for the response
-            var userDTO = new UserDTO
-            {
-                UserId = userEntity.UserId,
-                Username = userEntity.Username,
-                Email = userEntity.Email,
-                FirstName = userEntity.FirstName,
-                LastName = userEntity.LastName,
-                Role = userEntity.Role.ToString(),
-                Status = userEntity.Status.ToString(),
-                DateCreated = userEntity.DateCreated,
-                LastLogin = userEntity.LastLogin
-            };
+            var userDTO = mapper.Map<UserDTO>(userEntity);
+
             // Return the created user with a 201 Created response
             return CreatedAtRoute(
                 routeName: "GetUserById",
@@ -132,18 +90,14 @@ namespace LMS.API.Controllers
         [HttpPut("{id:Guid}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateUserRequestDTO updateUserRequest)
         {
-            //Map DTO to domain model
-            var userEntity = new User
+            // Check if the model state is valid
+            if (!ModelState.IsValid)
             {
-                UserId = id,
-                Username = updateUserRequest.Username,
-                Password = updateUserRequest.Password ?? "", // In a real application, you should hash the password
-                Email = updateUserRequest.Email,
-                FirstName = updateUserRequest.FirstName,
-                LastName = updateUserRequest.LastName,
-                Role = Enum.Parse<UserRoles>(updateUserRequest.Role),
-                Status = Enum.Parse<UserStatus>(updateUserRequest.Status),
-            };
+                return BadRequest(ModelState);
+            }
+
+            //Map DTO to domain model
+            var userEntity = mapper.Map<User>(updateUserRequest);
             // Data extraction section
             userEntity = await userRepository.UpdateUserAsync(id, userEntity);
             // If the user is not found, return a 404 Not Found response
@@ -151,19 +105,9 @@ namespace LMS.API.Controllers
             {
                 return NotFound();
             }
+            userEntity.LastLogin = DateTime.UtcNow; // Update last login time
             // Data mapping section for the response
-            var userDTO = new UserDTO
-            {
-                UserId = userEntity.UserId,
-                Username = userEntity.Username,
-                Email = userEntity.Email,
-                FirstName = userEntity.FirstName,
-                LastName = userEntity.LastName,
-                Role = userEntity.Role.ToString(),
-                Status = userEntity.Status.ToString(),
-                DateCreated = userEntity.DateCreated,
-                LastLogin = userEntity.LastLogin
-            };
+            var userDTO = mapper.Map<UserDTO>(userEntity);
             // Return the updated user with a 200 OK response
             return Ok(userDTO);
         }

@@ -1,4 +1,5 @@
 ﻿using LMS.API.Models.Domain;
+using LMS.API.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LMS.API.Data
@@ -29,6 +30,26 @@ namespace LMS.API.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            //Seed data for Users into the database
+            var users = new List<User>()
+            {
+                new User()
+                {
+                    UserId = Guid.Parse("b5f81d7d-49de-4508-aab5-3d598388f02f"),
+                    FirstName = "Admin",
+                    LastName = "User",
+                    Username = "admin",
+                    Password = "admin123", // In a real application, you should hash the password
+                    Email = "admin@email.com",
+                    Role = UserRoles.Admin,
+                    Status = UserStatus.Active,
+                    DateCreated = new DateTime(2025, 04, 14),
+                }
+            };
+
+            modelBuilder.Entity<User>()
+                .HasData(users);
 
             modelBuilder.Entity<BookBorrowing>()
                 .HasOne(b => b.CheckedOutByUser)
