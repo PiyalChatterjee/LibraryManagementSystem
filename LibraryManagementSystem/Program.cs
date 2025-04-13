@@ -1,4 +1,5 @@
 using LMS.API.Data;
+using LMS.API.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,7 @@ builder.Services.AddDbContext<LMSDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("LMSConnectionString"));
 });
+builder.Services.AddScoped<IUserRepository, SQLUserRepository>();
 
 var app = builder.Build();
 

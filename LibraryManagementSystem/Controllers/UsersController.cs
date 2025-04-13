@@ -4,6 +4,8 @@ using LMS.API.Models.Enums;
 using LMS.API.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using LMS.API.Repositories;
 
 namespace LMS.API.Controllers
 {
@@ -12,18 +14,20 @@ namespace LMS.API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly LMSDbContext dbContext;
+        private readonly IUserRepository userRepository;
 
-        public UsersController(LMSDbContext dbContext)
+        public UsersController(LMSDbContext dbContext, IUserRepository userRepository)
         {
             this.dbContext = dbContext;
+            this.userRepository = userRepository;
         }
         //Get all users
         // GET: api/users
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAllAsync()
         {
             // Data extraction section
-            var userEntities = dbContext.Users.ToList();
+            var userEntities = await userRepository.GetAllAsync();
 
             // Data mapping section
             var userDTOList = new List<UserDTO>();
@@ -49,20 +53,14 @@ namespace LMS.API.Controllers
 
         //Get user by id
         // GET: api/users/{id}
-        [HttpGet("{id:Guid}")]
-        public IActionResult GetById([FromRoute] Guid id)
+        [HttpGet("{id:Guid}", Name = "GetUserById")]
+        public async Task<IActionResult> GetByIdAsync([FromRoute] Guid id)
         {
-            // Data extraction section
-            // Using Find method because it is optimized for primary key lookups and 
-            // it can return the entity from the context cache if it was previously loaded.
-            var userEntity = dbContext.Users.Find(id);
-
-            // If the user is not found, return a 404 Not Found response
+            var userEntity = await userRepository.GetByIdAsync(id);
             if (userEntity == null)
             {
                 return NotFound();
             }
-
             // Data mapping section
             var userDTO = new UserDTO
             {
@@ -80,12 +78,12 @@ namespace LMS.API.Controllers
             return Ok(userDTO);
         }
 
+
         //Create user
         // POST: api/users
         [HttpPost]
-        public IActionResult Create([FromBody] AddUserRequestDTO addUserRequest)
+        public async Task<IActionResult> Create([FromBody] AddUserRequestDTO addUserRequest)
         {
-            // Data mapping section
             var userEntity = new User
             {
                 UserId = Guid.NewGuid(),
@@ -99,10 +97,15 @@ namespace LMS.API.Controllers
                 DateCreated = DateTime.UtcNow,
                 LastLogin = null
             };
-            // Data insertion section
-            dbContext.Users.Add(userEntity);
-            dbContext.SaveChanges();
 
+            userEntity = await userRepository.CreateUserAsync(userEntity);
+
+
+            // If the user is not created, return a 400 Bad Request response
+            if (userEntity == null)
+            {
+                return BadRequest("User could not be created.");
+            }
             // Data mapping section for the response
             var userDTO = new UserDTO
             {
@@ -117,31 +120,37 @@ namespace LMS.API.Controllers
                 LastLogin = userEntity.LastLogin
             };
             // Return the created user with a 201 Created response
-            return CreatedAtAction(nameof(GetById), new { id = userDTO.UserId }, userDTO);
+            return CreatedAtRoute(
+                routeName: "GetUserById",
+                routeValues: new { id = userDTO.UserId },
+                value: userDTO
+            );
         }
+
         //Update user
         // PUT: api/users/{id}
         [HttpPut("{id:Guid}")]
-        public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateUserRequestDTO updateUserRequest)
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateUserRequestDTO updateUserRequest)
         {
+            //Map DTO to domain model
+            var userEntity = new User
+            {
+                UserId = id,
+                Username = updateUserRequest.Username,
+                Password = updateUserRequest.Password ?? "", // In a real application, you should hash the password
+                Email = updateUserRequest.Email,
+                FirstName = updateUserRequest.FirstName,
+                LastName = updateUserRequest.LastName,
+                Role = Enum.Parse<UserRoles>(updateUserRequest.Role),
+                Status = Enum.Parse<UserStatus>(updateUserRequest.Status),
+            };
             // Data extraction section
-            var userEntity = dbContext.Users.Find(id);
+            userEntity = await userRepository.UpdateUserAsync(id, userEntity);
             // If the user is not found, return a 404 Not Found response
             if (userEntity == null)
             {
                 return NotFound();
             }
-            // Data mapping section
-            userEntity.Username = updateUserRequest.Username;
-            userEntity.Email = updateUserRequest.Email;
-            userEntity.Password = updateUserRequest.Password ?? userEntity.Password; // In a real application, you should hash the password
-            userEntity.FirstName = updateUserRequest.FirstName;
-            userEntity.LastName = updateUserRequest.LastName;
-            userEntity.Role = Enum.Parse<UserRoles>(updateUserRequest.Role);
-            userEntity.Status = Enum.Parse<UserStatus>(updateUserRequest.Status);
-            userEntity.LastLogin = DateTime.UtcNow; // Update last login time
-            // Data update section
-            dbContext.SaveChanges();
             // Data mapping section for the response
             var userDTO = new UserDTO
             {
@@ -162,18 +171,14 @@ namespace LMS.API.Controllers
         //Delete user
         // DELETE: api/users/{id}
         [HttpDelete("{id:Guid}")]
-        public IActionResult Delete([FromRoute] Guid id)
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            // Data extraction section
-            var userEntity = dbContext.Users.Find(id);
+            var isUserDeleted = await userRepository.DeleteUserAsync(id);
             // If the user is not found, return a 404 Not Found response
-            if (userEntity == null)
+            if (!isUserDeleted)
             {
                 return NotFound();
             }
-            // Data deletion section
-            dbContext.Users.Remove(userEntity);
-            dbContext.SaveChanges();
             // Return a 204 No Content response
             return NoContent();
         }
