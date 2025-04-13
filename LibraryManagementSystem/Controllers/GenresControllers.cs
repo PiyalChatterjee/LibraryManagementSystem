@@ -6,21 +6,22 @@ namespace LMS.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthorController : ControllerBase
+    public class GenresControllers : ControllerBase
     {
         private readonly LMSDbContext dbContext;
 
-        public AuthorController(LMSDbContext dbContext)
+        public GenresControllers(LMSDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
-        //Get all authors
-        // GET: api/authors
+
+        //Get all genres
+        // GET: api/genres
         [HttpGet]
         public IActionResult GetAll()
         {
-            var authors = dbContext.Authors.ToList();
-            return Ok(authors);
+            var genres = dbContext.Genres.ToList();
+            return Ok(genres);
         }
     }
 }
