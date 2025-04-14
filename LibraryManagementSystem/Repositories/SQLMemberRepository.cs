@@ -1,5 +1,6 @@
 ﻿using LMS.API.Data;
 using LMS.API.Models.Domain;
+using LMS.API.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LMS.API.Repositories
@@ -34,11 +35,38 @@ namespace LMS.API.Repositories
             return true;
         }
 
-        public async Task<List<Member>> GetAllAsync()
+        public async Task<List<Member>> GetAllAsync(string? status = null, string? sortBy = null, bool? isAscending = false)
         {
-            return await dbContext.Members
-                .Include(m => m.User)
-                .ToListAsync();
+            var memberList = dbContext.Members
+                .Include(m => m.User).AsQueryable();
+
+            //Filtering
+            if(!string.IsNullOrWhiteSpace(status))
+            {
+                var queryStatus = Enum.Parse<MemberStatus>(status);
+                memberList = memberList.Where(x => x.Status == queryStatus);
+            }
+
+            //Sorting
+            if(!string.IsNullOrWhiteSpace(sortBy)) {
+                if (sortBy.Equals("MembershipStartDate", StringComparison.OrdinalIgnoreCase))
+                {
+                    memberList = isAscending == true ? memberList.OrderBy(x => x.MembershipStartDate) : memberList.OrderByDescending(x => x.MembershipStartDate);
+                }
+                else if (sortBy.Equals("MembershipExpiryDate", StringComparison.OrdinalIgnoreCase))
+                {
+                    memberList = isAscending == true ? memberList.OrderBy(x => x.MembershipExpiryDate) : memberList.OrderByDescending(x => x.MembershipExpiryDate);
+                }
+                else if (sortBy.Equals("FirstName", StringComparison.OrdinalIgnoreCase))
+                {
+                    memberList = isAscending == true ? memberList.OrderBy(x => x.User.FirstName) : memberList.OrderByDescending(x => x.User.FirstName);
+                }
+                else if (sortBy.Equals("LastName", StringComparison.OrdinalIgnoreCase))
+                {
+                    memberList = isAscending == true ? memberList.OrderBy(x => x.User.LastName) : memberList.OrderByDescending(x => x.User.LastName);
+                }
+            }
+            return await memberList.ToListAsync();
         }
 
         public async Task<Member?> GetByIdAsync(Guid id)

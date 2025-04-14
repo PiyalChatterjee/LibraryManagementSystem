@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LMS.API.Repositories;
 using AutoMapper;
+using LMS.API.CustomActionFilters;
 
 namespace LMS.API.Controllers
 {
@@ -56,14 +57,9 @@ namespace LMS.API.Controllers
         //Create user
         // POST: api/users
         [HttpPost]
+        [ValidateModel]
         public async Task<IActionResult> Create([FromBody] AddUserRequestDTO addUserRequest)
         {
-            // Check if the model state is valid
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var userEntity = mapper.Map<User>(addUserRequest);
             userEntity.DateCreated = DateTime.UtcNow; // Assign DateCreated as DateTime.Now
 
@@ -88,14 +84,9 @@ namespace LMS.API.Controllers
         //Update user
         // PUT: api/users/{id}
         [HttpPut("{id:Guid}")]
+        [ValidateModel]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateUserRequestDTO updateUserRequest)
         {
-            // Check if the model state is valid
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             //Map DTO to domain model
             var userEntity = mapper.Map<User>(updateUserRequest);
             // Data extraction section

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LMS.API.CustomActionFilters;
 using LMS.API.Data;
 using LMS.API.Models.Domain;
 using LMS.API.Models.DTOs;
@@ -25,22 +26,18 @@ namespace LMS.API.Controllers
         //Get all members
         // GET: api/members
         [HttpGet]
-        public async Task<IActionResult> GetAllAsync()
+        [ValidateModel]
+        public async Task<IActionResult> GetAllAsync([FromQuery] MemberQueryParamsDTO paramsDTO)
         {
-            var memberEntities = await memberRepository.GetAllAsync();
+            var memberEntities = await memberRepository.GetAllAsync(paramsDTO.Status, paramsDTO.SortBy, paramsDTO.isAscending);
             return Ok(mapper.Map<List<MemberDTO>>(memberEntities));
         }
         //Create member
         // POST: api/members
         [HttpPost]
+        [ValidateModel]
         public async Task<IActionResult> CreateAsync([FromBody] AddMemberRequestDTO memberRequestDTO)
         {
-            // Check if the model state is valid
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             if (memberRequestDTO == null)
             {
                 return BadRequest("Member cannot be null");
@@ -76,14 +73,9 @@ namespace LMS.API.Controllers
         //Update member
         // PUT: api/members/{id}
         [HttpPut("{id:Guid}")]
+        [ValidateModel]
         public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] UpdateMemberRequestDTO updateMemberRequestDTO)
         {
-            // Check if the model state is valid
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             // Check if the member is null
             if (updateMemberRequestDTO == null)
             {

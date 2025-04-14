@@ -7,7 +7,7 @@ namespace LMS.API.Repositories
     {
         Task<Member> CreateAsync(Member member);
         Task<Member?> GetByIdAsync(Guid id);
-        Task<List<Member>> GetAllAsync();
+        Task<List<Member>> GetAllAsync(string? status, string? sortBy, bool? isAscending);
         Task<Member?> UpdateMemberAsync(Guid id, Member member);
         Task<bool> DeleteMemberAsync(Guid id);
     }

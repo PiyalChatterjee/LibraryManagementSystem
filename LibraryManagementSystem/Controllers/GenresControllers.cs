@@ -6,11 +6,11 @@ namespace LMS.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GenresControllers : ControllerBase
+    public class GenresController : ControllerBase
     {
         private readonly LMSDbContext dbContext;
 
-        public GenresControllers(LMSDbContext dbContext)
+        public GenresController(LMSDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
