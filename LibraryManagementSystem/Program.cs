@@ -17,6 +17,7 @@ builder.Services.AddDbContext<LMSDbContext>(options =>
 });
 builder.Services.AddScoped<IUserRepository, SQLUserRepository>();
 builder.Services.AddScoped<IMemberRepository, SQLMemberRepository>();
+builder.Services.AddScoped<IBookRepository, SQLBookRepository>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
 var app = builder.Build();

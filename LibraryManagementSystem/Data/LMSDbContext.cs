@@ -15,9 +15,7 @@ namespace LMS.API.Data
         public DbSet<BookCopy> BookCopies { get; set; }
         public DbSet<Author> Authors { get; set; }
         public DbSet<Genre> Genres { get; set; }
-        public DbSet<BookAuthor> BookAuthors { get; set; }
-        public DbSet<BookGenre> BookGenres { get; set; }
-
+        public DbSet<BookDetails> BookDetails { get; set; }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Notification> Notifications { get; set; }

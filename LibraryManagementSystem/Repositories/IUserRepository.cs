@@ -1,5 +1,4 @@
 ﻿using LMS.API.Models.Domain;
-using LMS.API.Models.DTOs;
 
 namespace LMS.API.Repositories
 {

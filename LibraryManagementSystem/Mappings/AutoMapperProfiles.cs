@@ -37,6 +37,30 @@ namespace LMS.API.Mappings
                 .ForMember(x => x.Status, opt => opt.MapFrom(x => Enum.Parse<MemberStatus>(x.Status)))
                 .ReverseMap()
                 .ForMember(x => x.Status, opt => opt.MapFrom(x => x.Status.ToString()));
+
+            CreateMap<Book, BookDTO>()
+                .ForMember(x => x.Status, opt => opt.MapFrom(x => x.Status.ToString()))
+                .ReverseMap()
+                .ForMember(x => x.Status, opt => opt.MapFrom(x => Enum.Parse<BookStatus>(x.Status)));
+            CreateMap<AddBookRequestDTO, Book>()
+                .ForMember(x => x.Status, opt => opt.MapFrom(x => Enum.Parse<BookStatus>(x.Status)))
+                .ReverseMap()
+                .ForMember(x => x.Status, opt => opt.MapFrom(x => x.Status.ToString()));
+            CreateMap<UpdateBookRequestDTO, Book>()
+                .ForMember(x => x.Status, opt => opt.MapFrom(x => Enum.Parse<BookStatus>(x.Status)))
+                .ReverseMap()
+                .ForMember(x => x.Status, opt => opt.MapFrom(x => x.Status.ToString()));
+
+            CreateMap<Author, AuthorDTO>().ReverseMap();
+            CreateMap<AddAuthorRequestDTO, Author>().ReverseMap();
+            CreateMap<UpdateAuthorRequestDTO, Author>().ReverseMap();
+
+            CreateMap<Genre, GenreDTO>().ReverseMap();
+            CreateMap<AddGenreRequestDTO, Genre>().ReverseMap();
+            CreateMap<UpdateGenreRequestDTO, Genre>().ReverseMap();
+
+            CreateMap<BookDetails, BookDetailsDTO>().ReverseMap();
+
         }
     }
 }
